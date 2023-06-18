@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <GVL Name="TCHMI" Id="{8e8d3798-e9cf-4c3b-bf7d-8106c95bcb19}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	//structure of robot position
+	stRobotPos : St_RobotPos;
+	//
+	bError : BOOL;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

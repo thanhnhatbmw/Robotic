@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{fe8e3114-24e1-4f35-a9ed-ebdd025d532d}</ProjectGuid>
+    <AssemblyName>TwinCAT Measurement Project2</AssemblyName>
+    <Name>TwinCAT Measurement Project2</Name>
+    <RootNamespace>TwinCAT Measurement Project2</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Scope Project1.tcscopex">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="YT Scope Project.tcscopex">
+      <SubType>Content</SubType>
+    </Content>
+  </ItemGroup>
+</Project>

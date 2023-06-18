@@ -1,0 +1,16 @@
+﻿{
+  "$schema": "../../Packages/Beckhoff.TwinCAT.HMI.Framework.12.750.1/runtimes/native1.12-tchmi/Schema/LocalizationDescription.Schema.json",
+  "locale": "de-DE",
+  "localizedText": {
+    "Text1": "Hallo Welt!",
+    "Text2": "Ich bin ein lokalisierter Text.",
+    "L_Robot_Monitor": "Robot Monitor",
+    "L_Start_Page": "Start Page",
+    "L_TCP/IP_Connection_State": "TCP/IP Connection State",
+    "L_Events": "Events",
+    "L_TCP/IP_Connection_": "TCP/IP Connection ",
+    "L_Localization": "Lokalisierung",
+    "L_Theme": "Thema",
+    "L_Settings": "Settings"
+  }
+}

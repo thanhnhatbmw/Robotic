@@ -1,0 +1,219 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <POU Name="Prg_Server" Id="{676c46f6-109e-4428-b37c-3040053bce72}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM Prg_Server
+VAR
+	
+	//
+	bInitialize		: BOOL;
+	hServer			: T_HSERVER;
+	fbServer		: FB_ServerClientConnection;
+	bEnable			: BOOL;
+	fbSocketsend	: FB_SocketSend;
+	fbsocketreceive	: FB_SocketReceive;
+	hSocket			: T_HSOCKET;
+	sSentData		: STRING(63);
+	bSend			: BOOL;
+	bReceive		: BOOL;
+	sReceivedData	: STRING;
+	sDataPreProcess : STRING;
+	eState			: E_SocketConnectionState;
+	//split string
+	iX 	: INT;
+	iY 	: INT;
+	iZ 	: INT;
+	iR 	: INT;
+	iP 	: INT;
+	iYaw: INT;
+	sWithoutX : STRING;
+	sWithoutY : STRING;
+	sWithoutZ : STRING;
+	sWithoutR : STRING;
+	sWithoutP : STRING;
+	sWithoutYaw : STRING;
+	//bdone : BOOL;
+	bfirstSend : BOOL :=TRUE;
+	istate : INT :=1;
+	iCheckdata : UDINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bInitialize THEN
+	bInitialize := FALSE;
+	F_CreateServerHnd(
+						sSrvNetID:='' , 
+						sLocalHost:='192.168.1.10' ,//server IP 
+						nLocalPort:= 10030, 
+						nMode:=0, 
+						bEnable:= FALSE, 
+						hServer:= hServer);
+END_IF
+
+fbServer(
+	hServer			:= hServer, 
+	eMode			:= eACCEPT_ALL , 
+	sRemoteHost		:= '192.168.1.1', //client IP
+	nRemotePort		:= 10030, //client port
+	bEnable			:= bEnable, 
+	tReconnect		:= T#5S, 
+	bBusy=> , 
+	bError=> , 
+	nErrID=> , 
+	hSocket			=> hSocket, 
+	eState			=> eState);
+
+
+//format data for send to robot
+sSentData:= '    1.00    2.00    3.00    4.00    5.00    6.00    7.00    8.00';
+
+//checking connection state 
+IF eState =E_SocketConnectionState.eSOCKET_CONNECTED THEN 
+	
+	  
+	   //send data to robot to get back data from robot
+	   CASE istate OF 
+		   1:
+		   	//sSentData:= '1.00';
+			IF bfirstSend THEN 
+				fbSocketsend(
+				sSrvNetId		:='' , 
+				hSocket			:=hSocket , 
+				cbLen			:=SIZEOF(sSentData) , 
+				pSrc			:=ADR(sSentData) , 
+				bExecute		:= bSend, 
+				tTimeout:= , 
+				bBusy=> , 
+				bError=> , 
+				nErrId=> );
+				
+			fbSocketsend(
+				sSrvNetId		:='' , 
+				hSocket			:=hSocket , 
+				cbLen			:=SIZEOF(sSentData) , 
+				pSrc			:=ADR(sSentData) , 
+				bExecute		:= true, 
+				tTimeout:= , 
+				bBusy=> , 
+				bError=> , 
+				nErrId=> );
+				bfirstSend :=FALSE;
+				bReceive :=TRUE;
+			END_IF
+			IF bReceive THEN 
+				
+				fbsocketreceive(
+					sSrvNetId		:= '', 
+					hSocket			:= hSocket, 
+					cbLen			:= SIZEOF(sReceivedData), 
+					pDest			:= ADR(sReceivedData), 
+					bExecute		:= FALSE, // bReceive
+					tTimeout:= T#0.01S , 
+					bBusy=> , 
+					bError=> , 
+					nErrId=> , 
+					nRecBytes=> );
+				fbsocketreceive(
+					sSrvNetId		:= '', 
+					hSocket			:= hSocket, 
+					cbLen			:= SIZEOF(sReceivedData), 
+					pDest			:= ADR(sReceivedData), 
+					bExecute		:= TRUE, // bReceive
+					tTimeout:= T#0.01S , 
+					bBusy=> , 
+					bError=> , 
+					nErrId=> , 
+					nRecBytes=>iCheckdata );
+					bReceive := FALSE;
+					
+			END_IF
+			
+				istate := 2;
+		   2:
+		   		sDataPreProcess := LEFT( sReceivedData,53);
+				//split data string
+				//get x position
+				iX := FIND(sDataPreProcess,',');
+				TCHMI.stRobotPos.x := LEFT(sDataPreProcess,iX-1);
+				sWithoutX := DELETE(sDataPreProcess,LEN( tchmi.stRobotPos.x)+1,1);
+				//get y position
+				iY := FIND(sWithoutX,',');
+				TCHMI.stRobotPos.Y := LEFT(sWithoutX,iY-1);
+				sWithoutY := DELETE(sWithoutX,LEN( tchmi.stRobotPos.Y)+1,1);
+				//get Z position
+				iZ := FIND(sWithoutY,',');
+				TCHMI.stRobotPos.Z := LEFT(sWithoutY,iZ-1);
+				sWithoutZ := DELETE(sWithoutY,LEN( tchmi.stRobotPos.Z)+1,1);
+				//get Roll  position
+				iR := FIND(sWithoutZ,',');
+				TCHMI.stRobotPos.roll := LEFT(sWithoutZ,iR-1);
+				sWithoutR := DELETE(sWithoutZ,LEN( tchmi.stRobotPos.roll)+1,1);
+				//get pitch position
+				iP := FIND(sWithoutR,',');
+				TCHMI.stRobotPos.pitch := LEFT(sWithoutR,iP-1);
+				sWithoutP := DELETE(sWithoutR,LEN( tchmi.stRobotPos.pitch)+1,1);
+				//get yaw position
+				iYaw := FIND(sWithoutP,',');
+				TCHMI.stRobotPos.yaw := LEFT(sWithoutP,iyaw-1);
+				sWithoutYaw := DELETE(sWithoutP,LEN( tchmi.stRobotPos.yaw)+1,1);
+				istate := 3;
+		   3:
+		   		istate:= 1;
+		   		bfirstSend := TRUE;
+				
+	   END_CASE
+END_IF
+]]></ST>
+    </Implementation>
+    <LineIds Name="Prg_Server">
+      <LineId Id="5" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="21" Count="5" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="28" Count="11" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="736" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="392" Count="0" />
+      <LineId Id="431" Count="0" />
+      <LineId Id="549" Count="0" />
+      <LineId Id="621" Count="0" />
+      <LineId Id="623" Count="0" />
+      <LineId Id="628" Count="0" />
+      <LineId Id="650" Count="0" />
+      <LineId Id="654" Count="9" />
+      <LineId Id="734" Count="0" />
+      <LineId Id="664" Count="8" />
+      <LineId Id="652" Count="0" />
+      <LineId Id="673" Count="0" />
+      <LineId Id="788" Count="0" />
+      <LineId Id="653" Count="0" />
+      <LineId Id="630" Count="0" />
+      <LineId Id="728" Count="0" />
+      <LineId Id="677" Count="9" />
+      <LineId Id="675" Count="0" />
+      <LineId Id="688" Count="9" />
+      <LineId Id="687" Count="0" />
+      <LineId Id="731" Count="0" />
+      <LineId Id="789" Count="0" />
+      <LineId Id="676" Count="0" />
+      <LineId Id="698" Count="1" />
+      <LineId Id="625" Count="0" />
+      <LineId Id="703" Count="24" />
+      <LineId Id="701" Count="0" />
+      <LineId Id="729" Count="0" />
+      <LineId Id="626" Count="0" />
+      <LineId Id="702" Count="0" />
+      <LineId Id="627" Count="0" />
+      <LineId Id="730" Count="0" />
+      <LineId Id="624" Count="0" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="51" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

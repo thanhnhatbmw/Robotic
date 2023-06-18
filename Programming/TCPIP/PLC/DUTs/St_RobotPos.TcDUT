@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <DUT Name="St_RobotPos" Id="{eea0f9a1-260f-4b4e-b590-7ab1944198f2}">
+    <Declaration><![CDATA[TYPE St_RobotPos :
+STRUCT
+	x 		: STRING;
+	y 		: STRING;
+	Z 		: STRING;
+	roll 	: STRING;
+	pitch 	: STRING;
+	yaw   	: STRING;
+	IO		: STRING;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
